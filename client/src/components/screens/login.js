@@ -1,26 +1,39 @@
-import React, { useState } from 'react'
-import axios from "axios"
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import M from "materialize-css"
+import { UserContext } from '../../App'
 
 const Login = () => {
+  const {state, dispatch} = useContext(UserContext)
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const postData = async () => {
-    try{
-      const resp = await axios.post("http://localhost:4000/signin", {
+  const postData = () => {
+    fetch("http://localhost:4000/signin", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
         email, password
       })
-      localStorage.setItem("jwt", resp.data.token);
-      localStorage.setItem("user", resp.data.user);
-      M.toast({html: "successfully signedIn", classes:"#1e88e5 blue darken-1"});
-      navigate("/")
-    }
-    catch(err){
-      M.toast({html: err.response.data.error, classes:"#1e88e5 blue darken-1"});
-    }
+    })
+    .then(resp => resp.json())  
+    .then(data => {
+      if(data.error){
+        M.toast({html: data.error, classes:"#1e88e5 blue darken-1"});
+      }
+      else{
+        localStorage.setItem("jwt",data.token);
+        localStorage.setItem("user",JSON.stringify(data.user));
+        dispatch({type:"USER", payload:data.user})
+        M.toast({html: "Successfully SignedIn", classes:"#1e88e5 blue darken-1"});
+        navigate("/");
+      }
+    })
+
+    
   }
   return (
     <div className="card mycard">

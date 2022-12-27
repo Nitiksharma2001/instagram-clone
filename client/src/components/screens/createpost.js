@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import axios from "axios"
 import {useNavigate } from 'react-router-dom'
 import M from "materialize-css"
 
@@ -13,19 +12,24 @@ const Createpost = () => {
   useEffect(() => {
     // adding post to db
     if(imgUrl){
-      const uploadDb = async () =>{
-        try{
-          const resp = await axios.post("http://localhost:4000/createpost", {
-            title, body, imgUrl
-          })
-          M.toast({html: resp.data.message, classes:"#1e88e5 blue darken-1"});
+      fetch("http://localhost:4000/createpost", {
+        method:"POST",
+        headers:{
+          "Content-Type":"Application/json",
+          "authorization":"Bearer "+localStorage.getItem("jwt")
+        },
+        body:JSON.stringify({
+          title, body, imgUrl
+        })
+      })
+      .then(resp => resp.json())
+      .then(data => {
+          M.toast({html: data.message, classes:"#1e88e5 blue darken-1"});
           navigate("/")
-        }
-        catch(err) {
-          M.toast({html: err.response.data.error.message, classes:"#1e88e5 blue darken-1"});
-        }
-      }
-      uploadDb();
+      })
+      .catch(err => {
+        M.toast({html: err, classes:"#1e88e5 blue darken-1"});
+      })
     }
   }, [imgUrl])
 
@@ -35,7 +39,12 @@ const Createpost = () => {
       formData.append("file", image[0]);
       formData.append("upload_preset", "insta-clone");
       // uploading image to cloudinary db
-      const resp = await axios.post("https://api.cloudinary.com/v1_1/dctcobaim/image/upload", {body : formData});
+      const config = {
+        method : "POST",
+        body : formData
+      }
+      const cloudUrl = "https://api.cloudinary.com/v1_1/dcf7v7xil/image/upload";
+      fetch(cloudUrl, config).then(resp => resp.json()).then(data => setImgUrl(data.url))
     }
     catch(err) {
       console.log(err)

@@ -28,10 +28,10 @@ router.post("/createpost", requirelogin, (req, res) => {
 		return res.status(422).send({"message" : "please add all the fields"});
 	}
 	const post = new Post({
-		title, body, imgUrl, postedBy : req.user._id
+		title, body, imageUrl:imgUrl, postedBy : req.user._id
 	})
 	post.save().then(result => {
-		res.status(422).send({"post" : result});
+		res.status(200).send({"post" : result});
 	})	
 	.then(err => {
 		console.log(err);
