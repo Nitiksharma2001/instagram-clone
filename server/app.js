@@ -2,13 +2,16 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors")
-const {MONGOURI, PORT} = require("./keys");
+const {MONGOURI} = require("./keys");
+const PORT = process.env.PORT || 4000
 
 app.use(express.json());
 app.use(cors());
 app.use(require("./routes/auth"));
 app.use(require("./routes/post"));
+app.use(require("./routes/user"));
 
+if(process.env.NODE_ENV)
 mongoose.connect(MONGOURI, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true
