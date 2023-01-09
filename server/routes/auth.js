@@ -4,11 +4,11 @@ const mongoose = require("mongoose")
 const User = require("../models/user")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const {JWT_SECRET} = require("../keys");
+const {JWT_SECRET} = require("../config/keys");
 
  
 router.post("/signup", (req, res) => {
-	const {name, email, password} = req.body;
+	const {name, email, password, pic} = req.body;
 	if(!name || !email || !password){
 		return res.status(422).send({error : "all fields are not entered"});
 	}
@@ -20,7 +20,7 @@ router.post("/signup", (req, res) => {
 		bcrypt.hash(password, 12)
 		.then(hashedPassword => {
 			const user = new User({
-				name, email, password : hashedPassword
+				name, email, password : hashedPassword,pic
 			})
 			user.save().then((user) => {
 				return res.json({"message" : "saved user"});
@@ -48,8 +48,8 @@ router.post("/signin", (req, res) => {
 		.then(domatch => {
 			if(domatch){
 				const token = jwt.sign({_id : savedUser._id}, JWT_SECRET);
-				const {_id, name, email, followers, followings} = savedUser;
-				res.json({token, user: {_id, name, email}})
+				const {_id, name, email,pic, followers, followings} = savedUser;
+				res.json({token, user: {_id, name, email, pic, followers, followings}})
 			}
 			else{
 				return res.status(422).json({error : "invalid email or password"})

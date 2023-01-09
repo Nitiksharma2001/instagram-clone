@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import M from "materialize-css";
 
@@ -8,15 +8,17 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [image, setImage] = useState("");
-  const [url, setUrl] = useState("");
-
-  const postData = () => {
+  const [url, setUrl] = useState(undefined)
+  useEffect(() => {
+    uploadFields();
+  },[url])
+  const uploadFields = ()=>{
     fetch("http://localhost:4000/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, pic:url }),
     })
       .then((resp) => resp.json())
       .then((data) => {
@@ -27,6 +29,29 @@ const Signup = () => {
           navigate("/login");
         }
       });
+  }
+  const postData = () => {
+    if(image){
+      uploadPic();
+    }
+    else{
+      uploadFields();
+    }
+  };
+  const uploadPic = () => {
+    const formData = new FormData();
+    formData.append("file", image[0]);
+    formData.append("upload_preset", "insta-clone");
+    // uploading image to cloudinary db
+    const config = {
+      method: "POST",
+      body: formData,
+    };
+    const cloudUrl = "https://api.cloudinary.com/v1_1/dcf7v7xil/image/upload";
+    fetch(cloudUrl, config)
+      .then((resp) => resp.json())
+      .then((data) => setUrl(data.url))
+      .catch(err => console.log(err))
   };
   return (
     <div className="card mycard">

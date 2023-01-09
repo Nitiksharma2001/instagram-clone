@@ -78,7 +78,7 @@ const Myprofile = () => {
 		{userProfile? <div style={{maxWidth : "550px", margin : "0 auto"}}>
 		<div style={{display : "flex", justifyContent : 'space-around', margin: "18px 0px", borderBottom : "1px solid gray"}}>
 		<div>
-			<img src="/image.jpg" style={{width : "160px", heigth : "160px", borderRadius : "80px"}}/>
+			<img src={userProfile?userProfile.user.pic:"loading"} style={{width : "160px", heigth : "160px", borderRadius : "80px"}}/>
 		</div>
 		<div>
 			<h4>{userProfile.user.name}</h4>

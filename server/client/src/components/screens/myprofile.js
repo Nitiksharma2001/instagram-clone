@@ -2,8 +2,9 @@ import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../App'
 
 const Myprofile = () => {
-  const {state}  = useContext(UserContext)
+  const {state, dispatch}  = useContext(UserContext)
   const [myPics, setMyPics] = useState([])
+  const [image, setImage] = useState("");
   useEffect(() => {
     fetch("http://localhost:4000/myposts", {
       method:"GET",
@@ -17,11 +18,52 @@ const Myprofile = () => {
       setMyPics(res.post)
     })
   }, [])
+  useEffect(() => {
+    if(image){
+      const formData = new FormData();
+      formData.append("file", image[0]);
+      formData.append("upload_preset", "insta-clone");
+      // uploading image to cloudinary db
+      const config = {
+        method: "POST",
+        body: formData, 
+      };
+      const cloudUrl = "https://api.cloudinary.com/v1_1/dcf7v7xil/image/upload";
+      fetch(cloudUrl, config)
+        .then((resp) => resp.json())
+        .then((data) => {
+          fetch("http://localhost:4000/updatepic", {
+          method:"PUT",
+          headers:{
+            "Content-Type":"Application/json",
+            "authorization":"Bearer "+localStorage.getItem("jwt")
+          },
+          body:JSON.stringify({pic:data.url})
+        })
+        .then(resp => resp.json())
+        .then(res => {
+          localStorage.setItem("user", JSON.stringify({...state, pic:data.url }))
+          dispatch({type:"UPDATEDPIC", payload:data.url})
+          window.location.reload()
+        })
+      })
+      .catch(err => console.log(err))
+    }
+  }, [image])
   return (
 	<div style={{maxWidth : "550px", margin : "0 auto"}}>
     <div style={{display : "flex", justifyContent : 'space-around', margin: "18px 0px", borderBottom : "1px solid gray"}}>
       <div>
-        <img src="/image.jpg" style={{width : "160px", heigth : "160px", borderRadius : "80px"}}/>
+        <img src={state?state.pic:"loading"} style={{width : "160px", heigth : "160px", borderRadius : "80px"}}/>
+        <div className="file-field input-field">
+          <div className="btn">
+            <span>Upload Pic</span>
+            <input type="file" onChange={(e) => setImage(e.target.files)} />
+          </div>
+          <div className="file-path-wrapper">
+            <input className="file-path validate" type="text" />
+          </div>
+        </div>
       </div>
       <div>
         <h4>{state?state.name:"loading"}</h4>
